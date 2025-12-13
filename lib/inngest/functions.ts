@@ -83,13 +83,13 @@ export const sendDailyNewsSummary = inngest.createFunction(
         });
 
         // Step 3: (placeholder) Summarize news via AI
-       const userNewsSummaries: { user: UserForNewsEmail; newsContent: string | null }[] = [];
+       const userNewsSummaries: { user: UserForNewsEmail; newsContent: string }[] = [];
 
         for (const { user, articles } of results) {
                 try {
                     const prompt = NEWS_SUMMARY_EMAIL_PROMPT.replace('{{newsData}}', JSON.stringify(articles, null, 2));
 
-                    const response = await step.ai.infer(`summarize-news-${user.email}`, {
+                    const response = await step.ai.infer(`summarize-news-${user.id}`, {
                         model: step.ai.models.gemini({ model: 'gemini-2.5-flash-lite' }),
                         body: {
                             contents: [{ role: 'user', parts: [{ text:prompt }]}]
@@ -101,8 +101,10 @@ export const sendDailyNewsSummary = inngest.createFunction(
 
                     userNewsSummaries.push({ user, newsContent });
                 } catch (e) {
-                    console.error('Failed to summarize news for : ', user.email);
-                    userNewsSummaries.push({ user, newsContent: null });
+                   console.error('Failed to summarize news for user:', user.id, e);
+                   userNewsSummaries.push({ 
+                     user, newsContent: '<p class="mobile-text dark-text-secondary" style="margin: 0 0 20px 0; font-size: 16px; line-height: 1.6; color: #CCDADC ">Today’s news summary is temporarily unavailable. Please check back later.</p>' 
+                    });
                 }
             }
 

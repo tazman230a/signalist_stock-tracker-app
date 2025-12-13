@@ -34,6 +34,12 @@ declare global {
         value?: string;
     };
 
+    type UserForNewsEmail = {
+        id: string;
+        email: string;
+        name: string;
+    };
+
     type Option = {
         value: string;
         label: string;

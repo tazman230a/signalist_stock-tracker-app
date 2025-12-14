@@ -98,6 +98,7 @@ export async function getNews(symbols?: string[]): Promise<MarketNewsArticle[]> 
   }
 }
 
+<<<<<<< HEAD
 export async function searchStocks(query?: string): Promise<StockWithWatchlistStatus[]>  {
   try {
     const token = process.env.FINNHUB_API_KEY ?? NEXT_PUBLIC_FINNHUB_API_KEY;
@@ -172,6 +173,25 @@ export async function searchStocks(query?: string): Promise<StockWithWatchlistSt
       })
       .slice(0, 15);
 
+=======
+const mapped: StockWithWatchlistStatus[] = results
+  .map((r) => {
+    const upper = (r.symbol || '').toUpperCase();
+    const name = r.description || upper;
+    const exchangeFromProfile = (r as any).__exchange as string | undefined;
+    const exchange = exchangeFromProfile || 'US';
+    const type = r.type || 'Stock';
+    const item: StockWithWatchlistStatus = {
+      symbol: upper,
+      name,
+      exchange,
+      type,
+      isInWatchlist: false,
+    };
+    return item;
+  })
+  .slice(0, 15);
+>>>>>>> 8efa8a01d99bca7d75ce0cb0cd54499f8fe99dc5
     return mapped;
   } catch (err) {
     console.error('Error in stock search:', err);

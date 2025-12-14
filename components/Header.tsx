@@ -5,7 +5,12 @@ import UseDropdown from "./UseDropdown";
 import { searchStocks } from "@/lib/actions/finnhub.actions";
 
 const Header = async ({ user } : {user: User}) => {
-  const initialStocks = await searchStocks();
+  let initialStocks: StockWithWatchlistStatus[] = [];
+  try {
+    initialStocks = await searchStocks();
+  } catch (error) {
+    console.error('Failed to fetch initial stocks:', error);
+  }
 
   return (
     <header className="sticky top-0 header">

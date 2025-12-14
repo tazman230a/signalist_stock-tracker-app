@@ -1,9 +1,11 @@
 'use server';
 
 import { getDateRange, validateArticle, formatArticle } from '@/lib/utils';
+import { POPULAR_STOCK_SYMBOLS } from '@/lib/constants';
+import { cache } from 'react';
 
 const FINNHUB_BASE_URL = 'https://finnhub.io/api/v1';
-const NEXT_PUBLIC_FINNHUB_API_KEY=process.env.NEXT_PUBLIC_FINNHUB_API_KEY ?? '';
+const NEXT_PUBLIC_FINNHUB_API_KEY = process.env.NEXT_PUBLIC_FINNHUB_API_KEY ?? '';
 
 async function fetchJSON<T>(url: string, revalidateSeconds?: number): Promise<T> {
   const options: RequestInit & { next?: { revalidate?: number } } = revalidateSeconds
@@ -23,8 +25,10 @@ export { fetchJSON };
 export async function getNews(symbols?: string[]): Promise<MarketNewsArticle[]> {
   try {
     const range = getDateRange(5);
-    const token = process.env.NEXT_PUBLIC_FINNHUB_API_KEY;
-    
+    const token = process.env.FINNHUB_API_KEY ?? NEXT_PUBLIC_FINNHUB_API_KEY;
+    if (!token) {
+      throw new Error('FINNHUB API key is not configured');
+    }
     const cleanSymbols = (symbols || [])
       .map((s) => s?.trim().toUpperCase())
       .filter((s): s is string => Boolean(s));
@@ -94,3 +98,26 @@ export async function getNews(symbols?: string[]): Promise<MarketNewsArticle[]> 
   }
 }
 
+const mapped: StockWithWatchlistStatus[] = results
+  .map((r) => {
+    const upper = (r.symbol || '').toUpperCase();
+    const name = r.description || upper;
+    const exchangeFromProfile = (r as any).__exchange as string | undefined;
+    const exchange = exchangeFromProfile || 'US';
+    const type = r.type || 'Stock';
+    const item: StockWithWatchlistStatus = {
+      symbol: upper,
+      name,
+      exchange,
+      type,
+      isInWatchlist: false,
+    };
+    return item;
+  })
+  .slice(0, 15);
+    return mapped;
+  } catch (err) {
+    console.error('Error in stock search:', err);
+    return [];
+  }
+});

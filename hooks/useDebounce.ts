@@ -6,10 +6,11 @@ export function useDebounce(callback: () => void, delay: number) {
     const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     return useCallback(() => {
-        if(timeoutRef.current) {
+        if (timeoutRef.current) {
             clearTimeout(timeoutRef.current);
         }
 
-        timeoutRef.current = setTimeout(callback, delay);
-    }, [callback, delay]);
-}
+      timeoutRef.current = setTimeout(() => {
+         callbackRef.current();
+      }, delay);
+}, [delay, callback]);
